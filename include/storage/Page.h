@@ -16,7 +16,7 @@ private:
     page_id_t page_id_ { INVALID_PAGE_ID };
     int pin_count_ { 0 };
     bool is_dirty_ { false };
-    
+
 public:
     // 1. Constructor: Initializes a blank, unused memory frame
     Page();
@@ -31,8 +31,8 @@ public:
     page_id_t GetPageId() const { return page_id_; }
     int GetPinCount() const { return pin_count_; }
     bool IsDirty() const { return is_dirty_; }
-    const char *GetData() const { return data_; }
-    char *GetData() { return data_; }
+    const char* GetData() const { return data_; }
+    char* GetData() { return data_; }
 
     // 5. Setters & Modifiers: Updaters for the internal status fields
     void SetPageId(page_id_t page_id) { page_id_ = page_id; }
