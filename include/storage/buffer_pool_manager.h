@@ -1,6 +1,7 @@
 #pragma once
 
 #include "storage/page.h"
+#include "storage/lru_replacer.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -29,6 +30,8 @@ private:
 
     // Maps Page IDs on disk to their current Frame ID slot in RAM
     std::unordered_map<page_id_t, frame_id_t> page_table_t;
+
+    LRUReplacer replacer{POOL_SIZE};
 };
 
 
