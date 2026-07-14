@@ -2,6 +2,7 @@
 
 #include "storage/page.h"
 #include "storage/lru_replacer.h"
+#include "storage/disk_manager.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -21,7 +22,12 @@ public:
     BufferPoolManager() = default;
     ~BufferPoolManager() = default;
 
+    // write the page back to persistent memory if dirty bit is set
+    bool flushPage(page_id_t page_id);
+
 private:
+    // BufferPoolManager wants to communicate with DiskManager
+    DiskManager *disk_manager_;
     // Step 3.1.4: The physical array of RAM slots
     Page frames_[POOL_SIZE];
 
@@ -29,7 +35,7 @@ private:
     std::vector<frame_id_t> free_list_;
 
     // Maps Page IDs on disk to their current Frame ID slot in RAM
-    std::unordered_map<page_id_t, frame_id_t> page_table_t;
+    std::unordered_map<page_id_t, frame_id_t> page_table_;
 
     LRUReplacer replacer{POOL_SIZE};
 };
