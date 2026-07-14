@@ -45,3 +45,15 @@ bool LRUReplacer::victim(frame_id_t* frame_id) {
     return true;
 }
 
+
+void LRUReplacer::pin(frame_id_t frame_id) {
+    assert(frame_id >= 0 && frame_id < capacity_ && "Frame Id in out of range");
+
+    auto it = lru_map_.find(frame_id);
+
+    // Only erase if the frame is actually found in the replacer!
+    if(it != lru_map_.end()) {
+        lru_list_.erase(it->second);
+        lru_map_.erase(frame_id);
+    }
+}

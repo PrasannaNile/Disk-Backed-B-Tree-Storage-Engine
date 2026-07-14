@@ -27,5 +27,8 @@ public:
     void unpin(frame_id_t frame_id);
 
     // replace page from the replacer list, a very first node (least recently used)
-    bool victim(frame_id_t* frame_id); 
+    bool victim(frame_id_t* frame_id);
+
+    // page is already in RAM, but it was unpinned and again query refers it
+    void pin(frame_id_t frame_id); 
 };
