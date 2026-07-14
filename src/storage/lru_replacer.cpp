@@ -57,3 +57,8 @@ void LRUReplacer::pin(frame_id_t frame_id) {
         lru_map_.erase(frame_id);
     }
 }
+
+
+size_t LRUReplacer::pages_ready_to_evict() const {
+    return lru_list_.size();
+}

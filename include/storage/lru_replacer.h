@@ -31,4 +31,7 @@ public:
 
     // page is already in RAM, but it was unpinned and again query refers it
     void pin(frame_id_t frame_id); 
+
+    // how many pages are ready evict
+    size_t pages_ready_to_evict() const;
 };
