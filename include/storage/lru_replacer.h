@@ -23,5 +23,9 @@ public:
     explicit LRUReplacer(size_t num_pages);
     ~LRUReplacer() = default;
 
+    // add new node to the end of the replacer list 
     void unpin(frame_id_t frame_id);
+
+    // replace page from the replacer list, a very first node (least recently used)
+    bool victim(frame_id_t* frame_id); 
 };

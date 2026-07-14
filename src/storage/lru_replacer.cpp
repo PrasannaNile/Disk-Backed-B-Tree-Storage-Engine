@@ -29,3 +29,19 @@ void LRUReplacer::unpin(frame_id_t frame_id) {
     }
 }
 
+
+// replace page from the replacer list, a very first node (least recently used)
+bool LRUReplacer::victim(frame_id_t* frame_id) {
+    // all frames/pages are in used, pin_count > 0
+    if(lru_list_.empty()) return false;
+
+    // replace least recently used frame which is at the front
+    *frame_id = lru_list_.front();
+    lru_list_.pop_front();
+
+    // replacer not any more track that frame 
+    lru_map_.erase(*frame_id);
+
+    return true;
+}
+
