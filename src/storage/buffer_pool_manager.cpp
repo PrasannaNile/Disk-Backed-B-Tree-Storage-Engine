@@ -1,6 +1,16 @@
 #include "storage/buffer_pool_manager.h"
 
 
+BufferPoolManager::BufferPoolManager(DiskManager* disk_manager, LRUReplacer* replacer) :
+    disk_manager_{disk_manager}, replacer{*replacer}
+{
+    // Populate the free list with all available hardware frames!
+    for (frame_id_t i = 0; i < POOL_SIZE; ++i) {
+        free_list_.push_back(i);
+    }
+}
+
+
 // write the page back to persistent memory if dirty bit is set
 bool BufferPoolManager::flushPage(page_id_t page_id) {
     // locate this page inside the RAM (get the frame id)

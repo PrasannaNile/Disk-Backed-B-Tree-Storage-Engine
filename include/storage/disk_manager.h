@@ -28,5 +28,5 @@ public:
     // Read API: Finds a page on disk and copies its 4KB content into a RAM buffer
     void ReadPage(const page_id_t page_id, char* page_data);
 
-    page_id_t AllocatePage() { return ++num_pages; }
+    page_id_t AllocatePage() { return num_pages++; }
 };
