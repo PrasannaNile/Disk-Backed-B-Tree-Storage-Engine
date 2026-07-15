@@ -31,6 +31,9 @@ public:
     // query request for a page (if in RAM cache hit, else cache miss)
     Page* FetchPage(page_id_t page_id);
 
+    // the database wants to create a brand new page (eg table grows or index needs new node)
+    Page* NewPage(page_id_t* page_id);
+
 private:
     // BufferPoolManager wants to communicate with DiskManager
     DiskManager *disk_manager_;

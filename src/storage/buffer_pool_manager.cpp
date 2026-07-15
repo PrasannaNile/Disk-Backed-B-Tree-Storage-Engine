@@ -100,3 +100,44 @@ Page* BufferPoolManager::FetchPage(page_id_t page_id) {
 
     return &page;
 }
+
+
+Page* BufferPoolManager::NewPage(page_id_t* page_id) {
+    // at least 1 frame is empty (populate empty frame with new page)
+    frame_id_t frame_id = -1;
+
+    // Grab from Free List
+    if(!free_list_.empty()) {
+        frame_id = free_list_.back();
+        free_list_.pop_back();
+    }
+
+    else {
+        if(!replacer.victim(&frame_id)) return nullptr;
+        // page to replacement from frame
+        Page& victim_page = frames_[frame_id];
+
+        // Write its contents back to disk if it was modified
+        if (victim_page.IsDirty()) {
+            disk_manager_->WritePage(victim_page.GetPageId(), victim_page.GetData());
+            victim_page.SetDirty(false); 
+        }
+        // Wipe out the old page's entry from the hash map tracking
+        page_table_.erase(victim_page.GetPageId());
+    }
+    
+
+    // Allocate a Brand New Page ID (using atomic counter if DiskManager lacks it)
+    page_id_t new_page_id = disk_manager_->AllocatePage();
+    Page& new_page = frames_[frame_id];
+
+    new_page.ResetMemory();
+    new_page.SetPageId(new_page_id);
+    new_page.IncreasePinCount();
+
+    page_table_[new_page_id] = frame_id;
+    replacer.pin(frame_id);
+
+    *page_id = new_page_id;
+    return &frames_[frame_id];
+}

@@ -47,3 +47,44 @@ Constructed the standardized in-memory envelope used to hold raw data fragments 
 ### Component Map
 *   `include/storage/page.hpp` — State properties and type constraints (`page_id_t`).
 *   `src/storage/page.cpp` — Frame resets and zero-filling implementations.
+
+
+---
+
+# Developer Log: Database Storage Engine Implementation
+
+## Day 3: Mastering the Core Engine Loops (`FetchPage` & `NewPage`)
+
+### Overview
+Today was a high-intensity engineering session focused on implementing the two most complex operational loops of the `BufferPoolManager`: `FetchPage(page_id)` and `NewPage(page_id)`. These methods form the core routing layer bridging our volatile physical frames (`RAM`), tracking systems (`page_table_`), cache eviction mechanics (`Replacer`), and persistent storage (`DiskManager`).
+
+### Key Accomplishments
+
+#### 1. Architected the Double-Tiered Frame Hunt
+Implemented a robust cache-miss fallback sequence utilized by both fetch and allocation routines to locate empty space in memory safely:
+* **Fast-Path Memory Verification:** Checking `free_list_` for unused physical frames instantiated on boot.
+* **Slow-Path Page Eviction:** Integrating `replacer.victim()` to identify unpinned frames ready for replacement when RAM is entirely full.
+
+#### 2. Secured Memory Integrity via Forced Flushing
+Handled critical multi-state synchronization to avoid data loss during page replacement:
+* **Dirty Page Writebacks:** Added checks to evaluate if an evicted page was modified (`IsDirty()`). If true, the system writes the page's modified state back to the disk via `DiskManager` before discarding the frame.
+* **State Eviction Tracking:** Successfully purging old metadata mappings from `page_table_` upon victim eviction to eliminate memory leakage.
+
+#### 3. Resolved Disk Manager Allocation Mechanics
+Identified and resolved a system abstraction gap where `AllocatePage()` was declared but undefined within the framework:
+* Implemented a clean, intuitive internal allocation counter (`num_pages_`) inside `DiskManager`.
+* Engineered `DiskManager::AllocatePage()` to safely hand out sequential, unique page identifiers ($0, 1, 2, \dots$) without relying on hidden configurations or risking testing suite crashes.
+
+#### 4. Mastered Dual-Return Output Design
+Successfully applied C++ out-pointer referencing (`page_id_t* page_id`) alongside standard return tracking. This elegantly solves the structural limitation of returning dual telemetry to callers: the volatile memory reference (`Page*`) for immediate data manipulation and the persistent integer identifier (`page_id_t`) for structural logging (e.g., child linking inside B+ Trees).
+
+### Technical Decisions & Deep Dives
+
+* **Fixed Array Memory Safety:** Confirmed that running `ResetMemory()` (which invokes a standard memory byte wipe via `memset`) on newly booted frames is fundamentally safe. Because `frames_` is initialized as a fixed-size array on system boot, physical memory allocations for the entire pool exist instantly in RAM, preventing unexpected segmentation faults.
+* **Scoping the Eviction Block:** Fixed a structural bug where data eviction logic was running universally outside the fallback paths. Relocating data cleanup routines strictly inside the `else { ... replacer.victim() ... }` block ensures innocent, fresh frames pulled from the free list are never subjected to invalid memory purges.
+
+### Status Check
+* **FetchPage Implementation:** Complete & verified.
+* **NewPage Implementation:** Complete & verified.
+* **Disk Allocation Engine:** Implemented & linked.
+* **Next Target:** Deletion mechanisms, clean flushing utilities, and local multi-threaded lock integrations.
