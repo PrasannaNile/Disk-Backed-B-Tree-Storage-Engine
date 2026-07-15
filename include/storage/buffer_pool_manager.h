@@ -25,6 +25,12 @@ public:
     // write the page back to persistent memory if dirty bit is set
     bool flushPage(page_id_t page_id);
 
+    // query is done using the page (unpin page and send to replacer if necessary)
+    bool UnpinPage(page_id_t page_id, bool is_dirty);
+
+    // query request for a page (if in RAM cache hit, else cache miss)
+    Page* FetchPage(page_id_t page_id);
+
 private:
     // BufferPoolManager wants to communicate with DiskManager
     DiskManager *disk_manager_;
