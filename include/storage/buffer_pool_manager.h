@@ -20,6 +20,7 @@ class BufferPoolManager {
 public:
     // Basic Constructor & Destructor shell
     BufferPoolManager() = default;
+    BufferPoolManager(DiskManager* disk_manager, LRUReplacer* replacer);
     ~BufferPoolManager() = default;
 
     // write the page back to persistent memory if dirty bit is set

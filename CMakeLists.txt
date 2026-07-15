@@ -21,4 +21,9 @@ add_compile_definitions(CONCPP_BUILD_SHARED) # defines a global preprocessor mac
 
 add_executable(BPlusTreeStorageEngine
     src/main.cpp
+    src/storage/page.cpp
+    src/storage/disk_manager.cpp
+    src/storage/buffer_pool_manager.cpp
+    src/storage/lru_replacer.cpp
+
 )
