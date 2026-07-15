@@ -88,3 +88,22 @@ Successfully applied C++ out-pointer referencing (`page_id_t* page_id`) alongsid
 * **NewPage Implementation:** Complete & verified.
 * **Disk Allocation Engine:** Implemented & linked.
 * **Next Target:** Deletion mechanisms, clean flushing utilities, and local multi-threaded lock integrations.
+
+
+---
+
+# Developer Log: Day 5 - B+ Tree Node Layout Design
+
+## Overview
+Today's focus was entirely conceptual, shifting gears from the low-level physical storage layers (Disk and Buffer Pool Managers) to the foundational architecture of the B+ Tree itself. No code was written to maintain a sustainable development pace.
+
+## Key Accomplishments
+*   **DiskManager Refactoring:** Successfully diagnosed and patched critical initialization and edge-case error bugs within the physical page file manager constructor.
+*   **Node Architecture Defined:** Conceptualized the 4KB page memory layout splits required for B+ Tree traversal.
+*   **Structural Differentiation Matrix:** 
+    *   **Leaf Nodes:** Defined to map distinct user keys directly to data record identifiers, alongside a trailing `next_page_id` pointer for range queries.
+    *   **Internal Nodes:** Defined strictly as routing nodes that store key-to-page-ID mappings to guide vertical tree traversal down to the leaves.
+
+## Next Steps
+*   Create header files defining the base `BPlusTreePage` layout class.
+*   Implement explicit binary serialization layouts for individual internal and leaf structs.
