@@ -88,3 +88,67 @@ Successfully applied C++ out-pointer referencing (`page_id_t* page_id`) alongsid
 * **NewPage Implementation:** Complete & verified.
 * **Disk Allocation Engine:** Implemented & linked.
 * **Next Target:** Deletion mechanisms, clean flushing utilities, and local multi-threaded lock integrations.
+
+
+---
+
+# Developer Log: Day 5 - B+ Tree Node Layout Design
+
+## Overview
+Today's focus was entirely conceptual, shifting gears from the low-level physical storage layers (Disk and Buffer Pool Managers) to the foundational architecture of the B+ Tree itself. No code was written to maintain a sustainable development pace.
+
+## Key Accomplishments
+*   **DiskManager Refactoring:** Successfully diagnosed and patched critical initialization and edge-case error bugs within the physical page file manager constructor.
+*   **Node Architecture Defined:** Conceptualized the 4KB page memory layout splits required for B+ Tree traversal.
+*   **Structural Differentiation Matrix:** 
+    *   **Leaf Nodes:** Defined to map distinct user keys directly to data record identifiers, alongside a trailing `next_page_id` pointer for range queries.
+    *   **Internal Nodes:** Defined strictly as routing nodes that store key-to-page-ID mappings to guide vertical tree traversal down to the leaves.
+
+## Next Steps
+*   Create header files defining the base `BPlusTreePage` layout class.
+*   Implement explicit binary serialization layouts for individual internal and leaf structs.
+
+---
+
+
+# Developer Log: Day 6 - Shared Node Header Design
+
+## Overview
+Continued the conceptual exploration of the B+ Tree architecture, focusing on the shared structural layout of database pages. Clarified the physical mental model of node traversal and memory partitioning to prevent future implementation mistakes.
+
+## Key Accomplishments
+*   **Tree Simulation Clarification:** Resolved confusion regarding how randomly scattered physical disk pages logically simulate a sorted tree structure using internal signpost keys and Page ID pointers.
+*   **Base Class Architecture (`BPlusTreePage`):** Defined the role of a unified base class to enforce memory uniformity, enabling predictable byte offsets and polymorphism across node variants.
+*   **Header Metadata Layout:** Specified the exact fixed-size fields required at byte offset zero for every 4KB page:
+    *   `page_type` (Leaf vs. Internal)
+    *   `size` (Current key count)
+    *   `max_size` (Split threshold)
+    *   `parent_page_id` (Upward traversal pointer)
+    *   `page_id` (Self-verification pointer)
+*   **Memory Alignment:** Modeled how zero-cost pointer casting will map these structured fields directly over raw binary page buffers without runtime overhead.
+
+## Next Steps
+*   Define the structural differences in the payload section between Internal and Leaf nodes.
+*   Begin mapping out the C++ structure definitions for the shared header.
+
+---
+
+
+# Developer Log: Day 7 - Implementation of Base Node Layout
+
+## Overview
+Shifted from pure concepts to concrete structural engineering by defining and implementing the base class structure that governs memory layout for all B+ Tree nodes.
+
+## Key Accomplishments
+*   **Enumerated Node Typings:** Declared the `BPlusTreePageType` enum class using an explicit 4-byte (`uint32_t`) backing type to strictly bound header memory.
+*   **Base Layout Implementation (`BPlusTreePage`):** Codified the primary header struct to measure exactly 20 bytes with total physical alignment stability:
+    *   `page_type_` (0-3 bytes)
+    *   `size_` (4-7 bytes)
+    *   `max_size_` (8-11 bytes)
+    *   `parent_page_id_` (12-15 bytes)
+    *   `page_id_` (16-19 bytes)
+*   **Modern C++ Idioms Applied:** Utilized C++11 trailing return types (`auto Func() -> Type`) for strict codebase cleanliness and applied `const` qualifiers to guarantee read-only pointer safety on accessors.
+
+## Next Steps
+*   Define the structural memory layouts for `BPlusTreeInternalPage`.
+*   Establish data-mapping payloads for `BPlusTreeLeafPage`.

@@ -8,11 +8,13 @@ DiskManager::DiskManager(const std::string& db_file) : file_name_{db_file} {
 
     // If the file doesn't exist, create it by truncating a new file (creates a fresh new file)
     if(!this->db_io_.is_open()) {
+        // fail bit is set as first open fails
+        this->db_io_.clear();
         this->db_io_.open(db_file, std::ios::binary | std::ios::trunc | std::ios::in | std::ios::out);
 
         // if unable to create a file, throw an error
-        if(this->db_io_.is_open()) {
-            std::runtime_error("Failed to create or open database file: " + db_file);
+        if(!this->db_io_.is_open()) {
+            throw std::runtime_error("Failed to create or open database file: " + db_file);
         }
     }
 }
