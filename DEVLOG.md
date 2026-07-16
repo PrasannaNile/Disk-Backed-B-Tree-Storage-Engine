@@ -107,3 +107,26 @@ Today's focus was entirely conceptual, shifting gears from the low-level physica
 ## Next Steps
 *   Create header files defining the base `BPlusTreePage` layout class.
 *   Implement explicit binary serialization layouts for individual internal and leaf structs.
+
+---
+
+
+# Developer Log: Day 6 - Shared Node Header Design
+
+## Overview
+Continued the conceptual exploration of the B+ Tree architecture, focusing on the shared structural layout of database pages. Clarified the physical mental model of node traversal and memory partitioning to prevent future implementation mistakes.
+
+## Key Accomplishments
+*   **Tree Simulation Clarification:** Resolved confusion regarding how randomly scattered physical disk pages logically simulate a sorted tree structure using internal signpost keys and Page ID pointers.
+*   **Base Class Architecture (`BPlusTreePage`):** Defined the role of a unified base class to enforce memory uniformity, enabling predictable byte offsets and polymorphism across node variants.
+*   **Header Metadata Layout:** Specified the exact fixed-size fields required at byte offset zero for every 4KB page:
+    *   `page_type` (Leaf vs. Internal)
+    *   `size` (Current key count)
+    *   `max_size` (Split threshold)
+    *   `parent_page_id` (Upward traversal pointer)
+    *   `page_id` (Self-verification pointer)
+*   **Memory Alignment:** Modeled how zero-cost pointer casting will map these structured fields directly over raw binary page buffers without runtime overhead.
+
+## Next Steps
+*   Define the structural differences in the payload section between Internal and Leaf nodes.
+*   Begin mapping out the C++ structure definitions for the shared header.
