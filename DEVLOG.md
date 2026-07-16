@@ -130,3 +130,25 @@ Continued the conceptual exploration of the B+ Tree architecture, focusing on th
 ## Next Steps
 *   Define the structural differences in the payload section between Internal and Leaf nodes.
 *   Begin mapping out the C++ structure definitions for the shared header.
+
+---
+
+
+# Developer Log: Day 7 - Implementation of Base Node Layout
+
+## Overview
+Shifted from pure concepts to concrete structural engineering by defining and implementing the base class structure that governs memory layout for all B+ Tree nodes.
+
+## Key Accomplishments
+*   **Enumerated Node Typings:** Declared the `BPlusTreePageType` enum class using an explicit 4-byte (`uint32_t`) backing type to strictly bound header memory.
+*   **Base Layout Implementation (`BPlusTreePage`):** Codified the primary header struct to measure exactly 20 bytes with total physical alignment stability:
+    *   `page_type_` (0-3 bytes)
+    *   `size_` (4-7 bytes)
+    *   `max_size_` (8-11 bytes)
+    *   `parent_page_id_` (12-15 bytes)
+    *   `page_id_` (16-19 bytes)
+*   **Modern C++ Idioms Applied:** Utilized C++11 trailing return types (`auto Func() -> Type`) for strict codebase cleanliness and applied `const` qualifiers to guarantee read-only pointer safety on accessors.
+
+## Next Steps
+*   Define the structural memory layouts for `BPlusTreeInternalPage`.
+*   Establish data-mapping payloads for `BPlusTreeLeafPage`.
