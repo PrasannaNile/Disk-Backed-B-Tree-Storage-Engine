@@ -152,3 +152,51 @@ Shifted from pure concepts to concrete structural engineering by defining and im
 ## Next Steps
 *   Define the structural memory layouts for `BPlusTreeInternalPage`.
 *   Establish data-mapping payloads for `BPlusTreeLeafPage`.
+
+---
+
+
+# Devlog: Day 8 - B+ Tree Internal Page Structural Layout & Lookup
+
+## Objective
+Implement the memory layout, tracking mechanisms, and search routing routine (`Lookup`) for the `BPlusTreeInternalPage`. This class overlays directly onto raw 4096-byte memory pages managed by the `BufferPoolManager`.
+
+---
+
+## Architectural Insights & Engineering Decisions
+
+### 1. In-Memory Direct Mapping (`reinterpret_cast`)
+Instead of using standard heap allocations (`new`), our internal nodes are cast directly over raw 4KB memory buffers using `reinterpret_cast`. 
+* **The Constraint:** C++ constructors do not fire during a `reinterpret_cast`. 
+* **The Solution:** Implemented an explicit `Init()` method to safely wipe garbage data and structure the 20-byte base page header metadata whenever a page frame is freshly allocated or repurposed.
+
+### 2. The Index 0 Value Realignment (The 0th Pointer Problem)
+Internal nodes function as routing mechanisms where $N$ keys (dividers) logically map to $N + 1$ child pointers (lanes). 
+* Because our C++ storage representation mandates rigid `std::pair<KeyType, ValueType>` elements, we face an asymmetric pairing dilemma.
+* **The Design choice:** Index 0 is designated as a dummy slot. Its `Key` is ignored, and its `Value` (child page ID) is utilized to track "Lane 0"—the pointer handling all elements strictly less than the first real routing key at Index 1.
+
+### 3. Logarithmic Key Routing via Binary Search
+Linear scans ($O(N)$) degrade performance linearly as the page size approaches maximum capacity. 
+* Implemented `Lookup()` using binary search to scale efficiency to $O(\log N)$.
+* Implemented a fallback tracking state (`target_idx = 0`). If a target search key is smaller than the first real divider at Index 1, the search correctly drops through to the 0th ignored pointer.
+
+### 4. Comparison Abstraction (`KeyComparator`)
+The page architecture must remain entirely content-blind to support varied primary key types (integers, strings, composites). The internal page delegates comparison evaluations to an isolated `KeyComparator` function object passed down from the top-level index execution layer.
+
+---
+
+## Implementation Details
+
+### Component Layout
+* **Base Class:** `BPlusTreePage` (Manages shared 20-byte header metrics: Page Type, Size, Max Size, Parent Page ID, Page ID).
+* **Derived Class:** `BPlusTreeInternalPage` (Manages routing array buffers and traversal logic).
+
+### Core Methods Added
+* `Init(...)`: Reinitializes the page header type to `INTERNAL_PAGE` and zeros out tracking sizes.
+* `Lookup(const KeyType &key, const KeyComparator &comparator)`: Executes a binary search across valid boundary dividers to determine the matching `page_id_t` for structural downward traversal.
+
+---
+
+## Verification & Status
+* **State:** Core internal page mechanics are verified and sealed. 
+* **Next Step:** Day 9 will focus on building the `BPlusTreeLeafPage` structure, transitioning our layout logic from handling routing pointer values (`page_id_t`) to handling actual record/tuple storage mappings.
