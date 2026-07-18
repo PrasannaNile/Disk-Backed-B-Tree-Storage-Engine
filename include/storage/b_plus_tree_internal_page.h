@@ -10,6 +10,14 @@ private:
     // stores the first key, value pair exactly at byte 20
     MappingType array_[1];
 public:
+    void Init(page_id_t page_id, page_id_t parent_page_id = INVALID_PAGE_ID, int max_size = 3) {
+        SetPageType(BPlusTreePageType::INTERNAL);
+        SetSize(0);
+        SetMaxSize(max_size);
+        SetParentPageId(parent_page_id);
+        SetPageId(page_id);
+    }
+
     // getter methods
     auto KeyAt(int index) const -> KeyType { return array_[index].first; }
     auto ValueAt(int index) const -> ValueType { return array_[index].second; }
